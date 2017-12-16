@@ -5,15 +5,16 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
-//use std::iter::FromIterator;
 use std::str::FromStr;
 
 struct State {
-    v: Vec<char>,
-    m: HashMap<char, usize>,
+    p: [u8; 16],
+    v: [u8; 16],
     r: usize,
+    len: usize,
 }
 
+#[derive(Clone)]
 enum Move {
     Spin { o: usize },
     Exchange { o1: usize, o2: usize },
@@ -21,59 +22,172 @@ enum Move {
 }
 
 fn main() {
-    let (programs, input) = read_input1();
+    let (programs, input_dance) = read_input1();
+    let input = optimize_dance(&input_dance, programs.len());
     let mut state = State {
-        v: programs.chars().collect(),
-        m: HashMap::new(),
+        v: [0u8; 16],
+        p: [0u8; 16],
         r: 0,
+        len: programs.len(),
     };
-    for (i, c) in state.v.iter().enumerate() {
-        state.m.insert(*c, i);
+    for i in 0..16 {
+        state.p[i] = i as u8;
+        state.v[i] = i as u8;
     }
-    //let mut state: Vec<char> = programs.chars().collect();
+    let program_chars: Vec<char> = programs.chars().collect();
     let mut next_state = dance_routine(&mut state, &input);
-    let part1: String = next_state.v.iter().collect();
+    let part1 =
+        (0..programs.len()).map(|i| {
+            let pos = (i + next_state.r) % programs.len();
+            program_chars[next_state.p[pos] as usize]
+        }).collect::<String>();
     println!("part1: {}", part1);
 
-    for i in 0 .. 10000-1 {
-        let cur_state = next_state;
-        next_state = dance_routine(cur_state, &input);
-        if i % 1000000 == 0 {
-            println!("{}", i);
+    let mut repeat = false;
+    let mut repeat_start = 0;
+    let mut repeat_end = 0;
+    let routine_count = 1000000000;
+
+    {
+        let mut seen: HashMap<u64, usize> = HashMap::new();
+        seen.insert(state_to_u64(next_state), 0);
+        for i in 1 .. routine_count {
+            let cur_state = next_state;
+            next_state = dance_routine(cur_state, &input);
+            let u = state_to_u64(next_state);
+            if seen.contains_key(&u) {
+                repeat_start = *seen.get(&u).unwrap();
+                repeat_end = i;
+                repeat = true;
+                break;
+            } else {
+                seen.insert(u, i);
+            }
         }
     }
-    let part2: String = next_state.v.iter().collect();
+
+    if repeat {
+        let remaining = routine_count - repeat_end - 1;
+        let ending_routines = remaining % (repeat_end - repeat_start);
+        for _ in 0 .. ending_routines {
+            let cur_state = next_state;
+            next_state = dance_routine(cur_state, &input);
+        }
+    }
+    let part2 =
+        (0..programs.len()).map(|i| {
+            let pos = (i + next_state.r) % programs.len();
+            program_chars[next_state.p[pos] as usize]
+        }).collect::<String>();
     println!("part2: {}", part2);
 }
 
+fn state_to_u64(state: &State) -> u64 {
+    assert!(state.len <= 16);
+    let mut r = 0u64;
+    for i in 0 .. state.len {
+        let idx = (i + state.r) % state.len;
+        r = (r << 4) + state.v[idx] as u64;
+    }
+    r
+}
+
+fn optimize_dance(input: &Vec<Move>, len: usize) -> Vec<Move> {
+    let mut result = Vec::<Move>::new();
+    let mut source: Vec<Move> = input.clone();
+    let mut i = 0;
+    let mut progress = false;
+
+    loop {
+        while i < source.len() {
+            if let Move::Spin { o } = source[i] {
+                if o == 0 || o == len {
+                    i += 1;
+                    progress = true;
+                    continue;
+                }
+            }
+            if i + 1 < source.len() {
+                match (&source[i], &source[i + 1]) {
+                    (&Move::Spin { o: o1 }, &Move::Spin { o: o2 }) => {
+                        result.push(Move::Spin { o: (o1 + o2) % len });
+                        i += 2;
+                        progress = true;
+                    },
+                    (&Move::Spin { o }, &Move::Exchange { o1, o2 }) => {
+                        let no1 = (o1 + len - o) % len;
+                        let no2 = (o2 + len - o) % len;
+                        result.push(Move::Exchange { o1: no1, o2: no2 });
+                        result.push(Move::Spin { o: o });
+                        i += 2;
+                        progress = true;
+                    },
+                    (&Move::Exchange { o1, o2 } , &Move::Exchange { o1: s1, o2: s2 }) => {
+                        if o1.min(o2) == s1.min(s2) && o1.max(o2) == s1.max(s2) {
+                            progress = true;
+                            i += 2;
+                        } else {
+                            result.push(source[i].clone());
+                            i += 1;
+                        }
+                    },
+                    (&Move::Partner { p1, p2 } , &Move::Partner { p1: s1, p2: s2 }) => {
+                        if p1.min(p2) == s1.min(s2) && p1.max(p2) == s1.max(s2) {
+                            progress = true;
+                            i += 2;
+                        } else {
+                            result.push(source[i].clone());
+                            i += 1;
+                        }
+                    },
+                    _ => {
+                        result.push(source[i].clone());
+                        i += 1;
+                    },
+                }
+            } else {
+                result.push(source[i].clone());
+                i += 1;
+            }
+        }
+        if !progress {
+            break;
+        } else {
+            source = result.clone();
+            result = Vec::<Move>::new();
+            i = 0;
+            progress = false;
+        }
+    }
+    result
+}
+
 fn dance_routine<'a>(state: &'a mut State, input: &Vec<Move>) -> &'a mut State {
-    let len = state.v.len();
+    let len = state.len;
     for mv in input {
         match *mv {
             Move::Spin {o} => {
-                let mut rest = state.v.split_off(len - o);
-                while rest.len() > 0 {
-                    state.v.insert(0, rest.pop().unwrap());
-                }
+                state.r = (state.r + (len - o)) % len;
             }
             Move::Exchange {o1, o2} => {
-                state.v.swap(o1, o2);
+                let ro1 = (state.r + o1) % len;
+                let ro2 = (state.r + o2) % len;
+                let byval_swap = state.v[state.p[ro1] as usize];
+                state.v[state.p[ro1] as usize] = state.v[state.p[ro2] as usize];
+                state.v[state.p[ro2] as usize] = byval_swap;
+                let swap = state.p[ro1];
+                state.p[ro1] = state.p[ro2];
+                state.p[ro2] = swap;
             },
             Move::Partner {p1, p2} => {
-                let mut o1: i32 = -1;
-                let mut o2: i32 = -1;
-                for (i, c) in state.v.iter().enumerate() {
-                    if *c == p1 {
-                        o1 = i as i32;
-                    } else if *c == p2 {
-                        o2 = i as i32;
-                    }
-                    if o1 >= 0 && o2 >= 0 {
-                        break;
-                    }
-                }
-                assert!(o1 >= 0 && o2 >= 0);
-                state.v.swap(o1 as usize, o2 as usize);
+                let o1 = state.v[p1 as usize - 'a' as usize] as usize;
+                let o2 = state.v[p2 as usize - 'a' as usize] as usize;
+                let byval_swap = state.v[state.p[o1] as usize];
+                state.v[state.p[o1] as usize] = state.v[state.p[o2] as usize];
+                state.v[state.p[o2] as usize] = byval_swap;
+                let swap = state.p[o1];
+                state.p[o1] = state.p[o2];
+                state.p[o2] = swap;
             },
         }
     }
@@ -90,7 +204,6 @@ fn str_to_moves(s: String) -> Vec<Move> {
     s.trim_right().split(',').map(|s| {
         let mut cmd = String::from(s).clone();
         let rest = cmd.split_off(1);
-        //println!("{} {}", cmd, rest);
         let params: Vec<&str> = rest.split("/").collect();
         match cmd.as_str() {
             "s" => {
