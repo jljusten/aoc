@@ -41,6 +41,25 @@ fn main() {
     }
 
     println!("part1: {}", next[pos]);
+
+    /* For part 2 we no longer need to keep track of the full list. We
+     * only care what follows item `0`. Item `0` is always at the
+     * front, so we just watch for new items that would have been
+     * inserted just after item `0`. Whenever this happens, we just
+     * note what the new item would have been after `0`.
+     */
+    let mut part2 = next[0];
+    for i in 2018 .. COUNT + 1 {
+        let next_idx = (idx + input) % len;
+        idx = next_idx;
+        if idx == 0 {
+            part2 = i;
+        }
+        idx += 1;
+        len += 1;
+    }
+
+    println!("part2: {}", part2);
 }
 
 #[allow(dead_code)]
