@@ -19,19 +19,23 @@ pub fn main() {
         }
     }
     if let Some(v) = res {
-        if v.len() > 0 {
-            let v: Vec<usize> = v.into_iter().map(|i| input[i]).collect();
-            print!("{}", v[0]);
-            for i in 1..v.len() {
-                print!(" + {}", v[i]);
-            }
-            println!(" = {}", v.iter().fold(0, |acc, v| acc + v));
-            print!("{}", v[0]);
-            for i in 1..v.len() {
-                print!(" * {}", v[i]);
-            }
-            println!(" = {}", v.iter().fold(1, |acc, v| acc * v));
+        let v: Vec<usize> = v.into_iter().map(|i| input[i]).collect();
+        print(&v);
+    }
+}
+
+fn print(v: &Vec<usize>) {
+    if v.len() > 0 {
+        print!("{}", v[0]);
+        for i in 1..v.len() {
+            print!(" + {}", v[i]);
         }
+        println!(" = {}", v.iter().fold(0, |acc, v| acc + v));
+        print!("{}", v[0]);
+        for i in 1..v.len() {
+            print!(" * {}", v[i]);
+        }
+        println!(" = {}", v.iter().fold(1, |acc, v| acc * v));
     }
 }
 
