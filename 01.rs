@@ -9,19 +9,29 @@ use std::str::FromStr;
 
 pub fn main() {
     let input = read_input();
-    let mut res: Option<(usize, usize)> = None;
+    let mut res: Option<Vec<usize>> = None;
     'outer: for i in 0..input.len() {
         for j in (i + 1)..input.len() {
             if input[i] + input[j] == 2020 {
-                res = Some((i, j));
+                res = Some(vec![i, j]);
                 break 'outer;
             }
         }
     }
-    if let Some((i, j)) = res {
-        let (v1, v2) = (input[i], input[j]);
-        println!("{} + {} = {}", v1, v2, v1 + v2);
-        println!("{} * {} = {}", v1, v2, v1 * v2);
+    if let Some(v) = res {
+        if v.len() > 0 {
+            let v: Vec<usize> = v.into_iter().map(|i| input[i]).collect();
+            print!("{}", v[0]);
+            for i in 1..v.len() {
+                print!(" + {}", v[i]);
+            }
+            println!(" = {}", v.iter().fold(0, |acc, v| acc + v));
+            print!("{}", v[0]);
+            for i in 1..v.len() {
+                print!(" * {}", v[i]);
+            }
+            println!(" = {}", v.iter().fold(1, |acc, v| acc * v));
+        }
     }
 }
 
