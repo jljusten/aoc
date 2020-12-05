@@ -14,6 +14,10 @@ pub fn main() {
     if let Some(v) = res {
         print(&v);
     }
+    let res = find_vec(3, 2020, &input);
+    if let Some(v) = res {
+        print(&v);
+    }
 }
 
 fn find_vec(len: usize, target: usize, input: &Vec<usize>) -> Option<Vec<usize>> {
