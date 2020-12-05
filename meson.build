@@ -4,4 +4,8 @@
 
 project('aoc-2020', 'rust')
 
-executable('01', [ '01.rs' ])
+days = [ '01' ]
+
+foreach day : days
+    executable(day, [ day + '.rs' ])
+endforeach
