@@ -4,7 +4,7 @@
 
 project('aoc-2020', 'rust')
 
-days = [ '01' ]
+days = [ '01', '02' ]
 
 foreach day : days
     executable(day, [ day + '.rs' ])
