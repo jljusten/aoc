@@ -12,11 +12,21 @@ pub fn main() {
     let num_valid = input.iter().filter(|i| is_valid(i)).count();
     println!("Part 1:");
     println!("num_valid: {}", num_valid);
+    let num_valid = input.iter().filter(|i| is_valid_part2(i)).count();
+    println!("Part 2:");
+    println!("num_valid: {}", num_valid);
 }
 
 fn is_valid(pw: &Input) -> bool {
     let count = pw.pw.chars().filter(|p| *p == pw.ch).count();
     count >= pw.min && count <= pw.max
+}
+
+fn is_valid_part2(pw: &Input) -> bool {
+    let locs: [usize; 2] = [pw.min, pw.max];
+    let chars: Vec<char> = pw.pw.chars().collect();
+    let count = locs.iter().filter(|p| chars[**p-1] == pw.ch).count();
+    count == 1
 }
 
 #[derive(Debug)]
