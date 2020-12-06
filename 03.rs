@@ -6,9 +6,16 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
+static PART_2_PATHS: [(usize, usize); 5] = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
+
+static PART_2_TEST_RESULTS: [usize; 5] = [2, 7, 3, 4, 2];
+
 pub fn main() {
     let input = read_input("03.test");
-    assert_eq!(part1(&input), 7);
+    for i in 0..PART_2_PATHS.len() {
+        let (x, y) = PART_2_PATHS[i];
+        assert_eq!(count_path(&input, x, y), PART_2_TEST_RESULTS[i]);
+    }
     let input = read_input("03.input");
     println!("Part 1:");
     println!("count: {}", part1(&input));
@@ -16,14 +23,18 @@ pub fn main() {
 }
 
 fn part1(input: &Input) -> usize {
-    let (mut x, mut y) = (3, 1);
+    count_path(input, 3, 1)
+}
+
+fn count_path(input: &Input, dx: usize, dy: usize) -> usize {
+    let (mut x, mut y) = (dx, dy);
     let mut count = 0;
     while y < input.map.len() {
         if input.lookup(x, y) {
             count += 1;
         }
-        x += 3;
-        y += 1;
+        x += dx;
+        y += dy;
     }
     count
 }
