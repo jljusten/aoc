@@ -19,6 +19,13 @@ pub fn main() {
     let input = read_input("03.input");
     println!("Part 1:");
     println!("count: {}", part1(&input));
+
+    /* Count trees in each path and multiply */
+    let part2 = PART_2_PATHS
+        .iter()
+        .map(|p| count_path(&input, p.0, p.1))
+        .fold(1, |acc, c| acc * c);
+    println!("Part 2: {}", part2);
 }
 
 fn part1(input: &Input) -> usize {
