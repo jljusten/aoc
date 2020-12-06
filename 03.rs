@@ -52,13 +52,13 @@ struct Input {
 }
 
 fn line_to_input(line: &String) -> Vec<bool> {
-    line.chars().map(|c| {
-        match c {
+    line.chars()
+        .map(|c| match c {
             '#' => true,
             '.' => false,
             _ => panic!("Unsupported char ({}) in input", c),
-        }
-    }).collect()
+        })
+        .collect()
 }
 
 fn read_input(fname: &str) -> Input {
@@ -69,6 +69,6 @@ fn read_input(fname: &str) -> Input {
             .lines()
             .enumerate()
             .map(|line| line_to_input(&line.1.unwrap()))
-            .collect()
+            .collect(),
     }
 }
