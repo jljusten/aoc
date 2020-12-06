@@ -19,7 +19,6 @@ pub fn main() {
     let input = read_input("03.input");
     println!("Part 1:");
     println!("count: {}", part1(&input));
-    assert!(part1(&input) < 229);
 }
 
 fn part1(input: &Input) -> usize {
