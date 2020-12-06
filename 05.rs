@@ -9,6 +9,8 @@ use std::io::BufReader;
 pub fn main() {
     let input = read_input("05.input");
     println!("Part 1: {}", input.iter().fold(0, |a, x| usize::max(a, seat_id(&x.seat))));
+
+    println!("Part 2: {}", find_seat(&input));
 }
 
 fn seat_id(seat: &String) -> usize {
@@ -20,6 +22,17 @@ fn seat_id(seat: &String) -> usize {
         }
     }).collect();
     usize::from_str_radix(as_bin.as_str(), 2).unwrap()
+}
+
+fn find_seat(input: &Vec<Input>) -> usize {
+    let mut seats: Vec<usize> = input.iter().map(|i| seat_id(&i.seat)).collect();
+    seats.sort();
+    for i in 1..(seats.len()-1) {
+        if seats[i] + 2 == seats[i+1] {
+            return seats[i] + 1
+        }
+    }
+    panic!("Didn't find seat!")
 }
 
 #[derive(Debug)]
