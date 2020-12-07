@@ -10,10 +10,15 @@ pub fn main() {
     let input = read_input("06.test");
     let counts = input.iter().map(|i| count_group(i)).fold(0, |a, c| a + c);
     assert_eq!(counts, 11);
+    let counts = input.iter().map(|i| count_group_part2(i)).fold(0, |a, c| a + c);
+    assert_eq!(counts, 6);
 
     let input = read_input("06.input");
     let counts = input.iter().map(|i| count_group(i)).fold(0, |a, c| a + c);
     println!("Part 1: {}", counts);
+
+    let counts = input.iter().map(|i| count_group_part2(i)).fold(0, |a, c| a + c);
+    println!("Part 2: {}", counts);
 }
 
 fn count_group(group: &Input) -> u32 {
@@ -29,6 +34,26 @@ fn count_group(group: &Input) -> u32 {
         }
     }
     answered.count_ones()
+}
+
+fn count_group_part2(group: &Input) -> u32 {
+    let mut answered = 0u32;
+    let mut not_answered = 0u32;
+    for answers in group.answers.iter() {
+        let mut person_answered = 0u32;
+        for c in answers.chars() {
+            match c {
+                'a'..='z' => {
+                    person_answered |= 1 << (c as u32 - 'a' as u32);
+                },
+                _ => panic!("Unknown answer, {}", c),
+            }
+        }
+        not_answered |= 0x3ffffff & !person_answered;
+        answered |= person_answered;
+    }
+    /* All answered */
+    (answered & !not_answered).count_ones()
 }
 
 #[derive(Debug)]
