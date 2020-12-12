@@ -16,6 +16,12 @@ pub fn main() {
 }
 
 fn acc_at_loop(input: &Input) -> i32 {
+    let (acc, term) = acc_at_loop_or_term(input);
+    assert!(!term);
+    acc
+}
+
+fn acc_at_loop_or_term(input: &Input) -> (i32, bool) {
     let mut visited =
         input
         .program
@@ -25,8 +31,11 @@ fn acc_at_loop(input: &Input) -> i32 {
     let mut ip = 0;
     let mut acc = 0;
     loop {
-        if visited[ip] {
-            return acc;
+        if ip >= input.program.len() {
+            assert_eq!(ip, input.program.len());
+            return (acc, true);
+        } else if visited[ip] {
+            return (acc, false);
         }
         visited[ip] = true;
         match input.program[ip] {
