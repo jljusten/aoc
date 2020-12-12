@@ -1,4 +1,4 @@
-/* Advent of Code 2020, Day 2 */
+/* Advent of Code 2020, https://adventofcode.com/2020/day/2 */
 
 /* Jordan Justen : this file is public domain */
 
