@@ -12,9 +12,14 @@ use std::str::FromStr;
 pub fn main() {
     let input = read_input("07.test");
     assert_eq!(count_bags(&input, &"shiny gold".to_string()), 4);
+    assert_eq!(count_bags_part2(&input, &"shiny gold".to_string()), 32);
+
+    let input = read_input("07.test2");
+    assert_eq!(count_bags_part2(&input, &"shiny gold".to_string()), 126);
 
     let input = read_input("07.input");
     println!("Part 1: {}", count_bags(&input, &"shiny gold".to_string()));
+    println!("Part 2: {}", count_bags_part2(&input, &"shiny gold".to_string()));
 }
 
 fn count_bags(input: &Input, bag_name: &String) -> usize {
@@ -55,6 +60,56 @@ fn count_bags(input: &Input, bag_name: &String) -> usize {
         }
     }
     reachable.len()
+}
+
+#[derive(Debug)]
+enum BagsRequired {
+    Macro {
+        contents: HashMap::<String, usize>,
+    },
+    Value {
+        bags: usize,
+    },
+}
+
+fn count_bags_part2(input: &Input, bag_name: &String) -> usize {
+    let mut req =
+        input
+        .bags
+        .iter()
+        .map(|(k, v)| {
+            (k.clone(), BagsRequired::Macro { contents: v.contents.clone() })
+        })
+        .collect::<HashMap<String, BagsRequired>>();
+    loop {
+        let mut updates = HashMap::<String, usize>::new();
+        if let BagsRequired::Value { bags } = req[bag_name] {
+            return bags;
+        }
+        for k in req.keys() {
+            if let BagsRequired::Macro { contents } = &req[&k.clone()] {
+                let mut acc = Some(0usize);
+                for k in contents.keys() {
+                    match req[k] {
+                        BagsRequired::Value { bags } => {
+                            acc = Some(acc.unwrap() + (contents[k] * (bags + 1)));
+                        },
+                        _ => {
+                            acc = None;
+                            break;
+                        },
+                    }
+                }
+                if let Some(count) = acc {
+                    updates.insert(k.clone(), count);
+                }
+            }
+        }
+        assert!(!updates.is_empty());
+        for (k, v) in updates.iter() {
+            req.insert(k.clone(), BagsRequired::Value { bags: *v });
+        }
+    }
 }
 
 #[derive(Debug)]
