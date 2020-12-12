@@ -19,7 +19,10 @@ pub fn main() {
 
     let input = read_input("07.input");
     println!("Part 1: {}", count_bags(&input, &"shiny gold".to_string()));
-    println!("Part 2: {}", count_bags_part2(&input, &"shiny gold".to_string()));
+    println!(
+        "Part 2: {}",
+        count_bags_part2(&input, &"shiny gold".to_string())
+    );
 }
 
 fn count_bags(input: &Input, bag_name: &String) -> usize {
@@ -64,21 +67,21 @@ fn count_bags(input: &Input, bag_name: &String) -> usize {
 
 #[derive(Debug)]
 enum BagsRequired {
-    Macro {
-        contents: HashMap::<String, usize>,
-    },
-    Value {
-        bags: usize,
-    },
+    Macro { contents: HashMap<String, usize> },
+    Value { bags: usize },
 }
 
 fn count_bags_part2(input: &Input, bag_name: &String) -> usize {
-    let mut req =
-        input
+    let mut req = input
         .bags
         .iter()
         .map(|(k, v)| {
-            (k.clone(), BagsRequired::Macro { contents: v.contents.clone() })
+            (
+                k.clone(),
+                BagsRequired::Macro {
+                    contents: v.contents.clone(),
+                },
+            )
         })
         .collect::<HashMap<String, BagsRequired>>();
     loop {
@@ -93,11 +96,11 @@ fn count_bags_part2(input: &Input, bag_name: &String) -> usize {
                     match req[k] {
                         BagsRequired::Value { bags } => {
                             acc = Some(acc.unwrap() + (contents[k] * (bags + 1)));
-                        },
+                        }
                         _ => {
                             acc = None;
                             break;
-                        },
+                        }
                     }
                 }
                 if let Some(count) = acc {
