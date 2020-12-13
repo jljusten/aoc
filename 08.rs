@@ -46,7 +46,7 @@ fn acc_at_loop_or_term(input: &Input) -> (i32, bool) {
             Instruction::Jmp { i } => {
                 ip = (ip as i32 + i) as usize;
             }
-            Instruction::Nop => {
+            Instruction::Nop { i: _ } => {
                 ip += 1;
             }
         }
@@ -57,7 +57,7 @@ fn acc_at_loop_or_term(input: &Input) -> (i32, bool) {
 enum Instruction {
     Acc { i: i32 },
     Jmp { i: i32 },
-    Nop,
+    Nop { i: i32 },
 }
 
 #[derive(Debug)]
@@ -79,7 +79,7 @@ fn read_input(fname: &str) -> Input {
                 match name.as_str() {
                     "acc" => Instruction::Acc { i: val },
                     "jmp" => Instruction::Jmp { i: val },
-                    "nop" => Instruction::Nop,
+                    "nop" => Instruction::Nop { i: val },
                     _ => panic!("Unknown instruction {}", name),
                 }
             })
