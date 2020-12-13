@@ -10,9 +10,11 @@ use std::str::FromStr;
 pub fn main() {
     let input = read_input("09.test");
     assert_eq!(part1(&input, 5), 127);
+    assert_eq!(part2(&input, 5), 62);
 
     let input = read_input("09.input");
     println!("Part 1: {}", part1(&input, 25));
+    println!("Part 2: {}", part2(&input, 25));
 }
 
 fn part1(input: &Input, size: usize) -> u64 {
@@ -35,6 +37,30 @@ fn part1(input: &Input, size: usize) -> u64 {
         pos += 1;
         assert!(pos < input.data.len());
     }
+}
+
+fn part2(input: &Input, size: usize) -> u64 {
+    let target = part1(input, size);
+    let (mut start, mut end) = (0, 0);
+
+    'outer: for i in 0..(input.data.len() - 1) {
+        let mut sum = input.data[i];
+        for j in (i + 1)..(input.data.len() - i) {
+            sum += input.data[j];
+            if sum == target {
+                start = i;
+                end = j + 1;
+                break 'outer;
+            } else if sum > target {
+                break;
+            }
+        }
+    }
+
+    assert!(end <= input.data.len() && end - start >= 2);
+    let mut nums: Vec<u64> = input.data[start..end].to_vec();
+    nums.sort();
+    nums[0] + nums[nums.len() - 1]
 }
 
 #[derive(Debug)]
