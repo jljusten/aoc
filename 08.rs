@@ -10,15 +10,48 @@ use std::str::FromStr;
 pub fn main() {
     let input = read_input("08.test");
     assert_eq!(acc_at_loop(&input), 5);
+    assert_eq!(acc_at_fixed_termination(&input), 8);
 
     let input = read_input("08.input");
     println!("Part 1: {}", acc_at_loop(&input));
+    println!("Part 2: {}", acc_at_fixed_termination(&input));
 }
 
 fn acc_at_loop(input: &Input) -> i32 {
     let (acc, term) = acc_at_loop_or_term(input);
     assert!(!term);
     acc
+}
+
+fn acc_at_fixed_termination(input: &Input) -> i32 {
+    let mut modified = Input {
+        program: input.program.clone()
+    };
+    for ip in 0..input.program.len() {
+        if let Instruction::Acc { i: _ } = input.program[ip] {
+            continue;
+        }
+        match input.program[ip] {
+            Instruction::Acc { i: _ } => continue,
+            Instruction::Jmp { i } => {
+                modified.program[ip] = Instruction::Nop { i };
+                let (acc, term) = acc_at_loop_or_term(&modified);
+                if term {
+                    return acc;
+                }
+                modified.program[ip] = Instruction::Jmp { i };
+            },
+            Instruction::Nop { i } => {
+                modified.program[ip] = Instruction::Jmp { i };
+                let (acc, term) = acc_at_loop_or_term(&modified);
+                if term {
+                    return acc;
+                }
+                modified.program[ip] = Instruction::Nop { i };
+            },
+        }
+    }
+    panic!("Unable to fix program! Bad input?");
 }
 
 fn acc_at_loop_or_term(input: &Input) -> (i32, bool) {
@@ -53,7 +86,7 @@ fn acc_at_loop_or_term(input: &Input) -> (i32, bool) {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 enum Instruction {
     Acc { i: i32 },
     Jmp { i: i32 },
