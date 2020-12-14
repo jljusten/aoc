@@ -10,12 +10,15 @@ use std::str::FromStr;
 pub fn main() {
     let input = read_input("10.test");
     assert_eq!(part1(&input), 35);
+    assert_eq!(part2(&input), 8);
 
     let input = read_input("10.test2");
     assert_eq!(part1(&input), 220);
+    assert_eq!(part2(&input), 19208);
 
     let input = read_input("10.input");
     println!("Part 1: {}", part1(&input));
+    println!("Part 2: {}", part2(&input));
 }
 
 fn part1(input: &Input) -> u64 {
@@ -37,6 +40,46 @@ fn part1(input: &Input) -> u64 {
         .last()
         .unwrap();
     last.1 * last.3
+}
+
+fn part2(input: &Input) -> u64 {
+    let dev_jolts = input.data.last().unwrap() + 3;
+    let mut jolts = input.data.clone();
+    jolts.insert(0, 0);
+    jolts.push(dev_jolts);
+    let jolts = jolts;
+    let mut deps = vec![[0; 3]; jolts.len()];
+    for i in 0..jolts.len() {
+        for j in (i + 1)..jolts.len() {
+            if jolts[j] > jolts[i] + 3 {
+                break;
+            } else {
+                deps[i][j - i - 1] = j;
+            }
+        }
+    }
+
+    let mut counts = vec![0; jolts.len()];
+    counts[jolts.len() - 1] = 1;
+    while deps[0] != [0, 0, 0] {
+        let mut progress = false;
+        for i in 0..jolts.len() {
+            if deps[i] == [0, 0, 0] {
+                continue;
+            }
+            for j in 0..3 {
+                let dep = deps[i][j];
+                if dep > 0 && deps[dep] == [0, 0, 0] {
+                    counts[i] += counts[dep];
+                    deps[i][j] = 0;
+                    progress = true;
+                }
+            }
+        }
+        assert!(progress);
+    }
+
+    counts[0]
 }
 
 #[derive(Debug)]
