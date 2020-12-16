@@ -16,27 +16,25 @@ pub fn main() {
 }
 
 fn part1(input: &Input) -> usize {
-    let mut input = Box::<Input>::new((*input).clone());
-    let last = loop {
-        let (next, changed) = next_state(&input);
+    let mut state = (*input).clone();
+    loop {
+        let changed = next_state(&mut state);
         if !changed {
-            break next;
+            break;
         }
-        input = next;
-    };
-    count_occupied(&last)
+    }
+    count_occupied(&state)
 }
 
-fn next_state(input: &Input) -> (Box<Input>, bool) {
+fn next_state(input: &mut Input) -> bool {
     let counts = count_surrounding_occupied(input);
 
     let mut changed = false;
-    let d = &input.data;
-    let (h, w) = (d.len(), d[0].len());
-    let mut next = Box::new(input.clone());
+    let (h, w) = (input.data.len(), input.data[0].len());
+    let next = input;
     for y in 0..h {
         for x in 0..w {
-            match d[y][x] {
+            match next.data[y][x] {
                 SquareState::Floor => (),
                 SquareState::Empty => {
                     if counts[y][x] == 0 {
@@ -53,7 +51,7 @@ fn next_state(input: &Input) -> (Box<Input>, bool) {
             }
         }
     }
-    (next, changed)
+    changed
 }
 
 fn count_surrounding_occupied(input: &Input) -> Vec<Vec<u8>> {
