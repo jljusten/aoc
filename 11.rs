@@ -30,7 +30,10 @@ fn part1(input: &Input) -> usize {
 
 fn next_state(input: &mut Input) -> bool {
     let counts = count_surrounding_occupied(input);
+    apply_next_state(input, &counts, 4)
+}
 
+fn apply_next_state(input: &mut Input, counts: &Vec<Vec<u8>>, max_occupied: u8) -> bool {
     let mut changed = false;
     let (h, w) = (input.data.len(), input.data[0].len());
     let next = input;
@@ -45,7 +48,7 @@ fn next_state(input: &mut Input) -> bool {
                     }
                 }
                 SquareState::Occupied => {
-                    if counts[y][x] >= 4 {
+                    if counts[y][x] >= max_occupied {
                         next.data[y][x] = SquareState::Empty;
                         changed = true;
                     }
@@ -103,30 +106,7 @@ fn part2(input: &Input) -> usize {
 
 fn next_state_part2(input: &mut Input) -> bool {
     let counts = count_surrounding_occupied_part2(input);
-
-    let mut changed = false;
-    let (h, w) = (input.data.len(), input.data[0].len());
-    let next = input;
-    for y in 0..h {
-        for x in 0..w {
-            match next.data[y][x] {
-                SquareState::Floor => (),
-                SquareState::Empty => {
-                    if counts[y][x] == 0 {
-                        next.data[y][x] = SquareState::Occupied;
-                        changed = true;
-                    }
-                }
-                SquareState::Occupied => {
-                    if counts[y][x] >= 5 {
-                        next.data[y][x] = SquareState::Empty;
-                        changed = true;
-                    }
-                }
-            }
-        }
-    }
-    changed
+    apply_next_state(input, &counts, 5)
 }
 
 static DIRS: [(isize, isize); 8] = [
