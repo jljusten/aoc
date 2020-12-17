@@ -10,9 +10,11 @@ use std::str::FromStr;
 pub fn main() {
     let input = read_input("12.test");
     assert_eq!(part1(&input), 25);
+    assert_eq!(part2(&input), 286);
 
     let input = read_input("12.input");
     println!("Part 1: {}", part1(&input));
+    println!("Part 2: {}", part2(&input));
 }
 
 fn part1(input: &Input) -> usize {
@@ -31,14 +33,12 @@ fn part1(input: &Input) -> usize {
                 Instruction::Turn { t: Turn::R, d } => {
                     s.0 = n_to_dir(dir_to_n(s.0) + d);
                 }
-                Instruction::F { n } => {
-                    match s.0 {
-                        Direction::N => s.2 += n as isize,
-                        Direction::S => s.2 -= n as isize,
-                        Direction::E => s.1 += n as isize,
-                        Direction::W => s.1 -= n as isize,
-                    }
-                }
+                Instruction::F { n } => match s.0 {
+                    Direction::N => s.2 += n as isize,
+                    Direction::S => s.2 -= n as isize,
+                    Direction::E => s.1 += n as isize,
+                    Direction::W => s.1 -= n as isize,
+                },
             }
             Some((s.1, s.2))
         })
@@ -66,6 +66,54 @@ fn n_to_dir(d: usize) -> Direction {
     }
 }
 
+fn part2(input: &Input) -> usize {
+    let pos = input
+        .inst
+        .iter()
+        .scan((10isize, 1isize, 0isize, 0isize), |s, i| {
+            match *i {
+                Instruction::Directed { d: Direction::N, n } => s.1 += n as isize,
+                Instruction::Directed { d: Direction::S, n } => s.1 -= n as isize,
+                Instruction::Directed { d: Direction::E, n } => s.0 += n as isize,
+                Instruction::Directed { d: Direction::W, n } => s.0 -= n as isize,
+                Instruction::Turn { t, d } => {
+                    let d = if t == Turn::R {
+                        d as isize
+                    } else {
+                        360 - (d as isize)
+                    };
+                    match d {
+                        0 => (),
+                        90 => {
+                            let n = (s.1, -s.0);
+                            s.0 = n.0;
+                            s.1 = n.1;
+                        }
+                        180 => {
+                            let n = (-s.0, -s.1);
+                            s.0 = n.0;
+                            s.1 = n.1;
+                        }
+                        270 => {
+                            let n = (-s.1, s.0);
+                            s.0 = n.0;
+                            s.1 = n.1;
+                        }
+                        _ => panic!("Unsupported turn value {}", d % 360),
+                    }
+                }
+                Instruction::F { n } => {
+                    s.2 += s.0 * n as isize;
+                    s.3 += s.1 * n as isize;
+                }
+            }
+            Some((s.2, s.3))
+        })
+        .last()
+        .unwrap();
+    (pos.0.abs() + pos.1.abs()) as usize
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 enum Direction {
     N,
@@ -74,7 +122,7 @@ enum Direction {
     W,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 enum Turn {
     L,
     R,
