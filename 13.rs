@@ -5,6 +5,7 @@
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
+use std::io::Read;
 use std::str::FromStr;
 
 pub fn main() {
@@ -38,10 +39,8 @@ struct Input {
     nums: Vec<(usize, usize)>,
 }
 
-fn read_input(fname: &str) -> Input {
-    let input_f = File::open(fname).unwrap();
-    let input_file = BufReader::new(&input_f);
-    let mut lines = input_file.lines();
+fn read_br<R: Read>(br: &mut BufReader<R>) -> Input {
+    let mut lines = br.lines();
     let depart = lines.next().unwrap().unwrap();
     let depart = usize::from_str(&depart).unwrap();
     let nums: Vec<(usize, usize)> = lines
@@ -54,4 +53,15 @@ fn read_input(fname: &str) -> Input {
         .map(|n| (usize::from_str(n.1).unwrap(), n.0))
         .collect();
     Input { depart, nums }
+}
+
+fn input_from_str(s: &str) -> Input {
+    let mut input_file = BufReader::new(s.as_bytes());
+    read_br(&mut input_file)
+}
+
+fn read_input(fname: &str) -> Input {
+    let input_f = File::open(fname).unwrap();
+    let mut input_file = BufReader::new(&input_f);
+    read_br(&mut input_file)
 }
