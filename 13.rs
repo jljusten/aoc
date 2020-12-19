@@ -20,6 +20,7 @@ fn part1(input: &Input) -> usize {
         .nums
         .iter()
         .scan((std::usize::MAX, 0usize), |s, &x| {
+            let x = x.0;
             let wait = x - (input.depart % x);
             if wait < s.0 {
                 s.0 = wait;
@@ -34,7 +35,7 @@ fn part1(input: &Input) -> usize {
 #[derive(Debug)]
 struct Input {
     depart: usize,
-    nums: Vec<usize>,
+    nums: Vec<(usize, usize)>,
 }
 
 fn read_input(fname: &str) -> Input {
@@ -43,13 +44,14 @@ fn read_input(fname: &str) -> Input {
     let mut lines = input_file.lines();
     let depart = lines.next().unwrap().unwrap();
     let depart = usize::from_str(&depart).unwrap();
-    let mut nums: Vec<usize> = lines
+    let mut nums: Vec<(usize, usize)> = lines
         .next()
         .unwrap()
         .unwrap()
         .split(",")
-        .filter(|n| *n != "x")
-        .map(|n| usize::from_str(n).unwrap())
+        .enumerate()
+        .filter(|n| n.1 != "x")
+        .map(|n| (usize::from_str(n.1).unwrap(), n.0))
         .collect();
     nums.sort();
     Input { depart, nums }
