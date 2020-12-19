@@ -44,7 +44,7 @@ fn read_input(fname: &str) -> Input {
     let mut lines = input_file.lines();
     let depart = lines.next().unwrap().unwrap();
     let depart = usize::from_str(&depart).unwrap();
-    let mut nums: Vec<(usize, usize)> = lines
+    let nums: Vec<(usize, usize)> = lines
         .next()
         .unwrap()
         .unwrap()
@@ -53,6 +53,5 @@ fn read_input(fname: &str) -> Input {
         .filter(|n| n.1 != "x")
         .map(|n| (usize::from_str(n.1).unwrap(), n.0))
         .collect();
-    nums.sort();
     Input { depart, nums }
 }
