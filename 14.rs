@@ -12,8 +12,12 @@ pub fn main() {
     let input = read_input("14.test");
     assert_eq!(part1(&input), 165);
 
+    let input = read_input("14.test2");
+    assert_eq!(part2(&input), 208);
+
     let input = read_input("14.input");
     println!("Part 1: {}", part1(&input));
+    println!("Part 2: {}", part2(&input));
 }
 
 fn part1(input: &Input) -> u64 {
@@ -29,6 +33,36 @@ fn part1(input: &Input) -> u64 {
             Instruction::Mem { addr, val } => {
                 let entry = mem.entry(*addr).or_default();
                 *entry = (val & mask) | mask_val;
+            }
+        }
+    }
+    mem.values().fold(0, |a, &x| a + x)
+}
+
+fn part2(input: &Input) -> u64 {
+    let mut mem = HashMap::<u64, u64>::new();
+    let mut mask = 0u64;
+    let mut mask_val = 0u64;
+    for inst in input.inst.iter() {
+        match inst {
+            Instruction::Mask { mask: imask, val } => {
+                mask = *imask;
+                mask_val = *val;
+            }
+            Instruction::Mem { addr, val } => {
+                let set_addr = (addr & !mask) | mask_val;
+                let floating_bits = (0usize..36)
+                    .filter(|b| (mask & (1u64 << b)) != 0)
+                    .collect::<Vec<usize>>();
+                for v in 0..(1 << floating_bits.len()) {
+                    let mut addr = set_addr;
+                    for b in floating_bits.iter().enumerate() {
+                        let or_in = (v & (1 << b.0)) << (b.1 - b.0);
+                        addr = addr | or_in;
+                    }
+                    let entry = mem.entry(addr).or_default();
+                    *entry = *val;
+                }
             }
         }
     }
